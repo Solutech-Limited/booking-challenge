@@ -1,54 +1,34 @@
-# Use the official PHP image with FPM
-FROM php:8.3-cli-alpine as php_build_stage
-# Set working directory in the container
-WORKDIR /var/www
+FROM solutechlimited/octane-road-runner-server:latest
 
-ADD --chmod=0755 https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
-# Install required system dependencies for Laravel and PHP extensions
-RUN  apk update   \ apk upgrade  \ apk add --no-cache \
-        bash \
-        curl \
-        wget \
-        ncdu \
-        procps \
-        libsodium-dev \
-        # Install PHP extensions
-        && install-php-extensions \
-        bz2 \
-        pcntl \
-        mbstring \
-        bcmath \
-        sockets \
-        opcache \
-        exif \
-        pdo_mysql \
-        zip \
-        intl \
-        gd
+ENV USER=octane
 
-# Install Composer to manage Laravel dependencies
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+USER ${USER}
 
+COPY --link --chown=${USER}:${USER} . .
 
-# Copy the Laravel application files
-COPY . .
+# create /var/www/bootstrap/cache directory
+# RUN mkdir -p /var/www/html/bootstrap/cache
+# RUN chmod -R 777 /var/www/html/storage/logs
 
-# Install PHP dependencies using Composer
-RUN composer install --no-interaction --prefer-dist
+COPY --link --chown=${USER}:${USER} composer.json ./
 
-FROM node:22-alpine as npm_build_stage
-WORKDIR /var/www
-COPY . .
-# Install frontend dependencies (optional for Vue.js)
-RUN npm install
+RUN composer install \
+    --no-dev \
+    --no-interaction \
+    --no-autoloader \
+    --no-ansi \
+    --no-scripts
+    # --audit
 
-CMD ["npm","run","build"]
+RUN composer install \
+    --classmap-authoritative \
+    --no-interaction \
+    --no-ansi \
+    --no-dev \
+    && composer clear-cache
 
+ENV LOAD_ENV=0
+ENV RUNNING_MIGRATIONS=false
+ENV TEST_REDIS_COMMAND=false
 
-
-# Set the entrypoint for the container (start PHP-FPM server)
-FROM php_build_stage
-
-# Expose the Laravel application port (default 8000 for local development)
-EXPOSE 8000
-CMD  ["/usr/local/bin/php","artisan","serve"]
+RUN chmod +x rr

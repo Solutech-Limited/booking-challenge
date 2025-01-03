@@ -2,12 +2,13 @@ version: '3.8'
 
 services:
     app:
+        user: "10001:10001"  # Set the user to the current host user
         build:
             context: .  # Current directory as the build context
             dockerfile: Dockerfile
         container_name: laravel-app
         volumes:
-            - .:/var/www  # Mount the current directory to the container's /var/www
+            - .:/var/www/html  # Mount the current directory to the container's /var/www/html
         ports:
             - "8000:8000"   # Expose port 8000 for Laravel app
         depends_on:
@@ -29,11 +30,9 @@ services:
             MYSQL_ROOT_PASSWORD: secret@santa
             MYSQL_DATABASE: booking
             MYSQL_USER: solutech
-            MYSQL_PASSWORD: secret@santa
-#        volumes:
-#            - mysql-data:/var/lib/mysql  # Persist MySQL data between restarts
+            MYSQL_PASSWORD: secret@santa # Persist MySQL data
         ports:
-            - "3306:3306"  # Expose MySQL on port 3306
+            - "3356:3306"  # Expose MySQL on port 3306
         networks:
             - app-network
 
