@@ -1,0 +1,38 @@
+#!/usr/bin/env sh
+set -e
+
+container_mode=${CONTAINER_MODE:-"http"}
+running_migrations=${RUNNING_MIGRATIONS:-"false"}
+
+echo "Container mode: $container_mode"
+
+initialStuff() {
+    php artisan storage:link; \
+    # php artisan optimize:clear; \
+    php artisan event:cache; \
+    php artisan config:cache; \
+    # php artisan route:cache;
+    # display all scheduled tasks
+    php artisan schedule:list;
+
+    if [ ${running_migrations} = "true" ]; then
+        echo "Running migrations ..."
+        php artisan migrate;
+        echo "Running archived migrations if the folder exists ..."
+        if [ -d "/var/www/html/database/migrations/archived_migrations" ]; then
+            php artisan migrate --path=/database/migrations/archived_migrations;
+        fi
+    fi
+}
+
+if [ "$1" != "" ]; then
+    exec "$@"
+elif [ ${container_mode} = "http" ]; then
+    initialStuff
+    php artisan queue:work --tries=3 --timeout=90 --daemon &
+    exec php artisan serve
+else
+    echo "Invalid container mode supplied."
+    exit 1
+fi
+
