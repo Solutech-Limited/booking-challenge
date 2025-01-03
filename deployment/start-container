@@ -26,7 +26,7 @@ initialStuff() {
             php artisan migrate --path=/database/migrations/archived_migrations;
         fi
     fi
-    
+
     # php artisan route:cache;
     # display all scheduled tasks
     php artisan schedule:list;
@@ -36,7 +36,6 @@ if [ "$1" != "" ]; then
     exec "$@"
 elif [ ${container_mode} = "http" ]; then
     initialStuff
-    php artisan queue:work --tries=3 --timeout=90 --daemon &
     exec php artisan serve
 else
     echo "Invalid container mode supplied."

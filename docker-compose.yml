@@ -2,24 +2,10 @@ version: '3.8'
 
 services:
     app:
-        user: "10001:10001"  # Set the user to the current host user
-        build:
-            context: .  # Current directory as the build context
-            dockerfile: Dockerfile
+        image: laravel-booking-challenge
         container_name: laravel-app
-        volumes:
-            - .:/var/www/html  # Mount the current directory to the container's /var/www/html
         ports:
             - "8000:8000"   # Expose port 8000 for Laravel app
-        depends_on:
-            - mysql       # Ensure the mysql service starts before the app
-        environment:
-            - DB_CONNECTION=mysql
-            - DB_HOST=mysql
-            - DB_PORT=3306
-            - DB_DATABASE=laravel
-            - DB_USERNAME=root
-            - DB_PASSWORD=secret@santa
         networks:
             - app-network
 
