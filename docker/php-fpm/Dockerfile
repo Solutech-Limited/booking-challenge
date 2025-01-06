@@ -1,20 +1,29 @@
-FROM phpdockerio/php:8.4-fpm
+FROM ubuntu:22.04
+FROM php:8.2-fpm
 WORKDIR "/application"
 
 RUN apt-get update \
     && apt-get -y --no-install-recommends install \
         git \
-        php8.4-bcmath \
-        php8.4-bz2 \
-        php8.4-enchant \
-        php8.4-gd \
-        php8.4-gmagick \
-        php8.4-intl \
-        php8.4-mcrypt \
-        php8.4-mysql \
-        php8.4-odbc \
-        php8.4-redis \
         nodejs \
         npm \
+        libonig-dev \
+        libxml2-dev \
+        libzip-dev \
+        zip \
+        unzip \
+        libzip-dev \
+        libfreetype6-dev \ 
+        libjpeg62-turbo-dev \ 
+        libpng-dev \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/doc/*
+
+RUN  docker-php-ext-install bcmath \
+    gd \
+    intl \
+    pdo_mysql \
+    zip \
+    exif \
+    posix \
+    pcntl
